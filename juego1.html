@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monstruo Come Hamburguesas - Naturaleza</title>
+<style>
+  /* Estilo general de la página */
+  body {
+    margin: 0;
+    font-family: 'Comic Sans MS', sans-serif;
+    background: linear-gradient(to top, #a8e6cf, #dcedc1); /* fondo natural */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Encabezado */
+  header {
+    background: rgba(34, 139, 34, 0.9); /* verde bosque */
+    color: white;
+    text-align: center;
+    padding: 20px;
+    font-size: 2em;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    width: 100%;
+  }
+
+  h1 {
+    color: #ff4500;
+    text-shadow: 2px 2px #fff;
+    margin-top: 0;
+  }
+
+  /* Contenedor principal */
+  .container {
+    max-width: 900px;
+    width: 90%;
+    margin: 40px auto;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  }
+
+  /* Contenedor del juego */
+  #gameContainer {
+    position: relative;
+    width: 800px;
+    height: 400px;
+    border: 3px solid #333;
+    background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080') no-repeat center/cover;
+    overflow: hidden;
+    border-radius: 10px;
+    margin: 0 auto;
+  }
+
+  #monster {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: url('https://i.imgur.com/3NxnV5Y.png') no-repeat center/cover;
+    bottom: 50px;
+    left: 50px;
+    transition: transform 0.1s;
+  }
+
+  .burger {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: url('https://i.imgur.com/HH6L6qO.png') no-repeat center/cover;
+    background-size: cover;
+  }
+
+  #score {
+    margin-top: 15px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #228b22;
+    text-align: center;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 15px;
+    margin-top: 40px;
+    background: rgba(34, 139, 34, 0.9);
+    color: white;
+    font-weight: bold;
+    width: 100%;
+  }
+
+  /* Responsividad */
+  @media(max-width: 850px) {
+    #gameContainer {
+      width: 100%;
+      height: 300px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  Bienvenido a la Naturaleza
+</header>
+
+<div class="container">
+  <h1>Monstruo Come Hamburguesas</h1>
+  <div id="gameContainer">
+    <div id="monster"></div>
+  </div>
+  <div id="score">Hamburguesas comidas: 0 | Nivel: 1</div>
+</div>
+
+<footer>
+  &copy; 2025 - Naturaleza y Diversión
+</footer>
+
+<script>
+const monster = document.getElementById('monster');
+const gameContainer = document.getElementById('gameContainer');
+const scoreDisplay = document.getElementById('score');
+
+let score = 0;
+let level = 1;
+let speed = 5;
+const monsterWidth = 60;
+const monsterHeight = 60;
+let burgers = [];
+
+// Crear hamburguesa
+function createBurger(x, y) {
+  const burger = document.createElement('div');
+  burger.classList.add('burger');
+  burger.style.left = x + 'px';
+  burger.style.bottom = y + 'px';
+  gameContainer.appendChild(burger);
+  burgers.push(burger);
+}
+
+// Colisión
+function checkCollision(monster, item) {
+  const mLeft = parseInt(monster.style.left);
+  const mBottom = parseInt(monster.style.bottom);
+  const mRight = mLeft + monster.offsetWidth;
+  const mTop = mBottom + monster.offsetHeight;
+
+  const iLeft = parseInt(item.style.left);
+  const iBottom = parseInt(item.style.bottom);
+  const iRight = iLeft + item.offsetWidth;
+  const iTop = iBottom + item.offsetHeight;
+
+  return !(mRight < iLeft || mLeft > iRight || mTop < iBottom || mBottom > iTop);
+}
+
+// Generar hamburguesas aleatorias
+function spawnRandomBurger() {
+  const x = Math.random() * (gameContainer.clientWidth - 40);
+  const y = Math.random() * (gameContainer.clientHeight - 40);
+  createBurger(x, y);
+}
+
+// Control de teclas
+let keys = {};
+document.addEventListener('keydown', e => { keys[e.key] = true; });
+document.addEventListener('keyup', e => { keys[e.key] = false; });
+
+// Actualización del juego
+function update() {
+  let left = parseInt(monster.style.left) || 50;
+  let bottom = parseInt(monster.style.bottom) || 50;
+
+  if(keys['ArrowLeft']) left -= speed;
+  if(keys['ArrowRight']) left += speed;
+  if(keys['ArrowUp']) bottom += speed;
+  if(keys['ArrowDown']) bottom -= speed;
+
+  if(keys['x']) speed = Math.min(speed + 0.05, 15);
+  if(keys['c']) speed = Math.max(speed - 0.05, 1);
+
+  left = Math.max(0, Math.min(gameContainer.clientWidth - monsterWidth, left));
+  bottom = Math.max(0, Math.min(gameContainer.clientHeight - monsterHeight, bottom));
+  monster.style.left = left + 'px';
+  monster.style.bottom = bottom + 'px';
+
+  burgers.forEach((burger, index) => {
+    if(checkCollision(monster, burger)) {
+      burger.remove();
+      burgers.splice(index,1);
+      score++;
+      if(score % 5 === 0) level++;
+      scoreDisplay.textContent = `Hamburguesas comidas: ${score} | Nivel: ${level}`;
+    }
+  });
+
+  if(Math.random() < 0.01 * level) spawnRandomBurger();
+
+  requestAnimationFrame(update);
+}
+
+// Inicializar hamburguesas
+for(let i=0; i<10; i++){
+  spawnRandomBurger();
+}
+
+update();
+</script>
+
+</body>
+</html>
